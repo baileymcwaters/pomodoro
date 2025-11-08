@@ -4,7 +4,7 @@ import curses
 from curses import wrapper
 
 def get_time():
-    return 
+    return time.monotonic()
 
 def s_to_tc(seconds: int) -> str:
     h = str(seconds // 3600).zfill(2)
@@ -21,8 +21,9 @@ def main(stdscr) -> None:
     is_study = True
     is_sb = False
     curses.curs_set(0)
-    stdscr.timeout(1000)
+    stdscr.timeout(200)
     clock = ss_dur
+    last_tick = get_time()
     while True:
         if is_study:
             session = "Pomodoro"
@@ -48,30 +49,43 @@ def main(stdscr) -> None:
             break
         elif key == ord('p'):
             is_paused = not is_paused
+            last_tick = get_time()
 
-        if clock <= 0:
-            if is_sb:
-                is_study = True
-                is_sb = False
-                clock = ss_dur
-                sb_completed=sb_completed+1
-            elif not is_study and not is_sb:
-                is_study = True
-                clock = ss_dur
-                sb_completed = 0
-            elif is_study and sb_completed == 3:
-                is_study = False
-                is_sb = False
-                clock = lb_dur
-            else:
-                is_study = False
-                is_sb = True
-                clock = sb_dur
+        if key == curses.KEY_RESIZE:
+            pass
+        now = get_time()
+        if is_paused:
+            last_tick = now
+        else:
+            elapsed = now - last_tick
+            if elapsed >= 1:
+                dec = int(elapsed)
+                last_tick += dec
 
-        if not is_paused:
-            clock=clock-1
-    os.system('clear')
-    os.system('cls')
+                remaining = dec
+                while remaining > 0:
+                    if remaining < clock:
+                        clock -= remaining
+                        remaining = 0
+                    else:
+                        remaining -= clock
+                        if is_sb:
+                            is_study = True
+                            is_sb = False
+                            sb_completed = sb_completed + 1
+                            clock = ss_dur
+                        elif not is_study and not is_sb:
+                            is_study = True
+                            clock = ss_dur
+                            sb_completed = 0
+                        elif is_study and sb_completed == 3:
+                            is_study = False
+                            is_sb = False
+                            clock = lb_dur
+                        else:
+                            is_study = False
+                            is_sb = True
+                            clock = sb_dur
 
 if __name__ == '__main__':
     wrapper(main)
