@@ -86,8 +86,6 @@ def main(stdscr) -> None:
                             is_study = False
                             is_sb = True
                             clock = sb_dur
-    os.system('clear')
-    os.system('cls')
 
 if __name__ == '__main__':
     wrapper(main)
