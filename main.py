@@ -2,6 +2,7 @@ import os
 import time
 import curses
 from curses import wrapper
+from plyer import notification
 
 def get_time():
     return time.monotonic()
@@ -24,6 +25,12 @@ def main(stdscr) -> None:
     stdscr.timeout(200)
     clock = ss_dur
     last_tick = get_time()
+    notification.notify(
+        title='25 minutes pomodoro remaining',
+        message='Pomodoro will last for 25 minutes',
+        app_name='Pomodoro',
+        timeout=5
+    )
     while True:
         if is_study:
             session = "Pomodoro"
